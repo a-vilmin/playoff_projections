@@ -63,6 +63,13 @@ class LahmanHandler():
                 pitch_results[(year, team)] = stats[0]
         return pitch_results
 
+    def get_playoff_wins(self):
+        line = "SELECT yearID,teamIDwinner, wins, teamIDloser, losses "
+        line += "FROM seriespost WHERE yearID >= 1995"
+        results = self.execute_command(line)
+
+        for each in results:
+            print(each)
 if __name__ == '__main__':
     handler = LahmanHandler()
     teams = handler.find_playoff_teams()
@@ -70,5 +77,4 @@ if __name__ == '__main__':
     ops = handler.calc_OPS(teams)
     pitch_stats = handler.calc_pitching(teams)
 
-    for key, item in pitch_stats.items():
-        print(str(key[0]) + " " + key[1] + str(item))
+    handler.get_playoff_wins()
