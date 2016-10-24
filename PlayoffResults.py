@@ -43,44 +43,40 @@ class PlayoffResults():
         plt.show()
 
     def learn_data(self):
-        x = []
-        y = []
-        x_ = []
-        all_stats = []
-        key_ord = []
+        first_half = []
+        fh_wins = []
+        second_half = []
+        sh_wins = []
+        key_t = []
 
         for key, stats in self.results.items():
-            all_stats += [stats.stat_arr()]
-            y += [stats.wins]
-            key_ord += [key]
+            if key[0] < 2006:
+                first_half += [stats.stat_arr()]
+                fh_wins += [stats.wins]
+            else:
+                second_half += [stats.stat_arr()]
+                sh_wins += [stats.wins]
+                key_t += [key]
 
-        x = all_stats[:int((len(all_stats)/2))]
-        x_ = all_stats[int(len(all_stats)/2):]
-        y_learn = y[:int((len(y)/2))]
-        y_test = y[int((len(y)/2)):]
-        key_t = key_ord[int((len(y)/2)):]
-
-        x_ = np.array([x_])
-        x = np.array([x])
-        y_learn = np.array([y_learn])
-        y = np.array([y])
-        all_stats = np.array([all_stats])
+        x_ = np.array([second_half])
+        x = np.array([first_half])
+        y_learn = np.array([fh_wins])
 
         nn = Classifier(
             layers=[
                 Layer("Sigmoid", units=100),
                 Layer("Softmax")],
             learning_rate=0.01,
-            n_iter=10)
-        nn.fit(all_stats, y)
+            n_iter=50)
+        nn.fit(x, y_learn)
 
-        prdt = nn.predict(all_stats)
+        prdt = nn.predict(x_)
 
-        for i in range(len(y_test)):
-            if prdt[0][i] >= 10 or y_test[i] >= 11:
-                print(str(key_t[i])+" actually won "+str(y_test[i])+" and was " +
-                      "predicted with "+str(prdt[0][i]))
-
+        for i in range(len(second_half)):
+            if prdt[0][i] >= 10 or sh_wins[i] >= 11:
+                print((str(key_t[i])+" actually won "+str(sh_wins[i])+" and " +
+                       "was predicted with "+str(prdt[0][i])))
+        
 if __name__ == '__main__':
     numbers = PlayoffResults()
     numbers.get_results()
