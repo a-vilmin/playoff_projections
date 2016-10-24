@@ -2,8 +2,7 @@ import LahmanHandler as LH
 from collections import defaultdict
 import matplotlib.pyplot as plt
 import numpy as np
-from sknn.mlp import Regressor, Layer
-import itertools
+from sknn.mlp import Classifier, Layer
 
 
 class PlayoffResults():
@@ -48,30 +47,40 @@ class PlayoffResults():
         y = []
         x_ = []
         all_stats = []
-        for year, stats in self.results.items():
+        key_ord = []
+
+        for key, stats in self.results.items():
             all_stats += [stats.stat_arr()]
             y += [stats.wins]
+            key_ord += [key]
 
         x = all_stats[:int((len(all_stats)/2))]
         x_ = all_stats[int(len(all_stats)/2):]
-        y_test = y[:int((len(y)/2))]
+        y_learn = y[:int((len(y)/2))]
+        y_test = y[int((len(y)/2)):]
+        key_t = key_ord[int((len(y)/2)):]
 
         x_ = np.array([x_])
         x = np.array([x])
+        y_learn = np.array([y_learn])
         y = np.array([y])
         all_stats = np.array([all_stats])
 
-        nn = Regressor(
+        nn = Classifier(
             layers=[
-                Layer("Rectifier", units=100),
+                Layer("Sigmoid", units=100),
                 Layer("Softmax")],
-            learning_rate=0.001,
-            n_iter=30)
+            learning_rate=0.01,
+            n_iter=10)
         nn.fit(all_stats, y)
 
-        predictions = nn.predict(all_stats)
+        prdt = nn.predict(all_stats)
 
-        print(predictions)
+        for i in range(len(y_test)):
+            if prdt[0][i] >= 10 or y_test[i] >= 11:
+                print(str(key_t[i])+" actually won "+str(y_test[i])+" and was " +
+                      "predicted with "+str(prdt[0][i]))
+
 if __name__ == '__main__':
     numbers = PlayoffResults()
     numbers.get_results()
